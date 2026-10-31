@@ -135,52 +135,87 @@ if (-not (Test-Path (Join-Path $target 'lib\index.js'))) {
 Write-Step '登记到 profile/package.json'
 
 $pkgPath = Join-Path $profileDir 'package.json'
-$json    = Get-Content $pkgPath -Raw -Encoding UTF8
+$rawJson = Get-Content $pkgPath -Raw -Encoding UTF8
 $changed = $false
-$pkgForJson = '"' + $Pkg + '"'
 
-# 3a. dependencies
-if ($json -match [regex]::Escape($pkgForJson) + '\s*:') {
-  Write-Ok 'dependencies 已登记'
-} elseif ($json -match '(?s)"dependencies"\s*:\s*\{') {
-  $ins = "`r`n    `"$Pkg`": `"link:./plugins/$Pkg`","
-  $json = [regex]::Replace($json, '(?s)("dependencies"\s*:\s*\{)', "`$1$ins", 1)
-  $changed = $true
-  Write-Ok '已加入 dependencies'
-} else {
-  $ins = "`r`n  `"dependencies`": {`r`n    `"$Pkg`": `"link:./plugins/$Pkg`"`r`n  },"
-  $json = [regex]::Replace($json, '(?s)(\{\s*\r?\n)', "`$1$ins`r`n", 1)
-  $changed = $true
-  Write-Ok '已新建 dependencies 并加入'
+# 用 JSON 解析而非正则改写，避免破坏结构
+$obj = $null
+try { $obj = $rawJson | ConvertFrom-Json } catch {
+  Write-Err2 'profile/package.json 不是合法 JSON，无法自动登记'
+  Write-Host '    请按 README 手动添加。' -ForegroundColor Gray
+  $obj = $null
 }
 
-# 3b. bundles —— 必须追加到末尾，不能插到最前。
-# 顺序有意义：@deepseek-ai/dsh-base / dsh-web-app 要先于任何插件加载。
-if ($json -match '"bundles"\s*:\s*\[[^\]]*"dsh-haavk-boot"') {
-  Write-Ok 'bundles 已登记'
-} else {
-  $bi = $json.IndexOf('"bundles"')
-  $lb = if ($bi -ge 0) { $json.IndexOf('[', $bi) } else { -1 }
-  $rb = if ($lb -ge 0) { $json.IndexOf(']', $lb) } else { -1 }
-
-  if ($lb -ge 0 -and $rb -gt $lb) {
-    $inner = $json.Substring($lb + 1, $rb - $lb - 1)
-    $trim  = $inner.TrimEnd()
-    $sep   = if ($trim.EndsWith(',')) { '' } else { ',' }
-    $ins   = $trim + $sep + "`r`n        `"$Pkg`"`r`n      "
-    $json  = $json.Substring(0, $lb + 1) + $ins + $json.Substring($rb)
+if ($obj) {
+  # 3a. dependencies
+  if (-not $obj.PSObject.Properties['dependencies']) {
+    $obj | Add-Member -NotePropertyName 'dependencies' -NotePropertyValue ([pscustomobject]@{}) -Force
+  }
+  if ($obj.dependencies.PSObject.Properties[$Pkg]) {
+    Write-Ok 'dependencies 已登记'
+  } else {
+    $obj.dependencies | Add-Member -NotePropertyName $Pkg -NotePropertyValue "link:./plugins/$Pkg" -Force
     $changed = $true
-    Write-Ok '已追加到 bundles 末尾'
+    Write-Ok '已加入 dependencies'
+  }
+
+  # 3b. bundles —— 必须追加到末尾（顺序即加载顺序）
+  $bundles = $null
+  if ($obj.dsh -and $obj.dsh.profile -and $obj.dsh.profile.bundles) {
+    $bundles = $obj.dsh.profile.bundles
+  }
+  if ($bundles) {
+    if ($bundles -contains $Pkg) {
+      Write-Ok 'bundles 已登记'
+    } else {
+      $obj.dsh.profile.bundles = @($bundles) + $Pkg
+      $changed = $true
+      Write-Ok '已追加到 bundles 末尾'
+    }
   } else {
     Write-Warn2 'package.json 里没有 dsh.profile.bundles，无法自动登记'
-    Write-Host '    请按 README 手动添加。'
+    Write-Host '    请按 README 手动添加。' -ForegroundColor Gray
+  }
+
+  if ($changed) {
+    Copy-Item $pkgPath "$pkgPath.bak-haavk" -Force -ErrorAction SilentlyContinue
+    $out = $obj | ConvertTo-Json -Depth 20
+    [IO.File]::WriteAllText($pkgPath, $out, (New-Object Text.UTF8Encoding($false)))
+    Write-Ok 'package.json 已写入（备份：package.json.bak-haavk）'
   }
 }
 
-if ($changed) {
-  Copy-Item $pkgPath "$pkgPath.bak-haavk" -Force -ErrorAction SilentlyContinue
-  [IO.File]::WriteAllText($pkgPath, $json, (New-Object Text.UTF8Encoding($false)))
-  Write-Ok 'package.json 已写入（备份：package.json.bak-haavk）'
+# 3d. 用 node 重新格式化为标准缩进（PowerShell 的 ConvertTo-Json 缩进很丑）
+$nodeExe = Get-Command node -ErrorAction SilentlyContinue
+if ($nodeExe -and (Test-Path $pkgPath)) {
+  $tmpJs = Join-Path $env:TEMP ("haavk-fmt-" + [guid]::NewGuid().ToString('N') + ".cjs")
+  $fmtLines = @(
+    "const fs=require('fs');const p=process.argv[2];"
+    "try{const o=JSON.parse(fs.readFileSync(p,'utf8'));"
+    "fs.writeFileSync(p,JSON.stringify(o,null,2)+'\n','utf8');}catch(e){}"
+  )
+  [IO.File]::WriteAllText($tmpJs, ($fmtLines -join ''), (New-Object Text.UTF8Encoding($false)))
+  & $nodeExe.Source $tmpJs $pkgPath *> $null
+  Remove-Item $tmpJs -Force -ErrorAction SilentlyContinue
+}
+
+# 3c. pnpm-workspace.yaml 放行构建脚本
+# pnpm 12 默认拦截 git 依赖的 prepare/postinstall，必须显式 allowBuilds
+$wsPath = Join-Path $profileDir 'pnpm-workspace.yaml'
+$ws = if (Test-Path $wsPath) { Get-Content $wsPath -Raw -Encoding UTF8 } else { "packages:`r`n  - .`r`n" }
+if ($ws -notmatch 'dsh-haavk-boot:\s*true') {
+  if ($ws -match '(?m)^allowBuilds:\s*$') {
+    $ws = [regex]::Replace($ws, '(?m)^(allowBuilds:\s*)$', "`$1`r`n  dsh-haavk-boot: true", 1)
+  } elseif ($ws -match '(?m)^allowBuilds:') {
+    # allowBuilds 后面直接跟键值，插在它之后
+    $ws = [regex]::Replace($ws, '(?m)^(allowBuilds:\r?\n)', "`$1  dsh-haavk-boot: true`r`n", 1)
+  } else {
+    $ws = $ws.TrimEnd() + "`r`nallowBuilds:`r`n  dsh-haavk-boot: true`r`n"
+  }
+  [IO.File]::WriteAllText($wsPath, $ws, (New-Object Text.UTF8Encoding($false)))
+  Write-Ok 'pnpm-workspace.yaml 已放行构建脚本'
+} else {
+  Write-Ok 'allowBuilds 已放行'
 }
 
 # ---------- 4. 链接 ----------

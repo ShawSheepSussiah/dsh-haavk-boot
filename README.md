@@ -52,11 +52,52 @@ irm https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/insta
 curl -fsSL https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/install.sh | bash
 ```
 
-脚本会自动完成：找 profile → 下载插件 → 改 `package.json` → 建链接。
+脚本会自动完成：找 profile → 下载插件 → 改 `package.json` → 放行构建脚本 → 建链接。
 看到 **安装完成** 后，**完全退出 DSH 再打开**即可。
 
 > 脚本是幂等的，重复跑只会更新，不会装重。
 > 源码在 [install.ps1](install.ps1) / [install.sh](install.sh)，跑之前可以自己看一遍。
+
+---
+
+## 📦 用 DSH 官方命令安装
+
+如果你更习惯官方命令：
+
+```bash
+dsh plugin --profile desktop add github:ShawSheepSussiah/dsh-haavk-boot
+```
+
+本插件带 `prepare` / `postinstall` 脚本，装完会**自动把自己追加到 `dsh.profile.bundles`**，不需要手改 `package.json`。
+
+但 **pnpm 12 会拦截 git 依赖的构建脚本**，第一次装可能报：
+
+```
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: dsh-haavk-boot@https://codeload.github.com/...
+Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
+```
+
+两个办法二选一：
+
+**办法 A — 先放行再装（推荐）**
+
+编辑 `~/.dsh/profiles/desktop/pnpm-workspace.yaml`，加上：
+
+```yaml
+allowBuilds:
+  dsh-haavk-boot: true
+```
+
+然后重跑上面那条 `dsh plugin add`。
+
+**办法 B — 事后批准**
+
+```bash
+dsh plugin --profile desktop approve-builds
+dsh plugin --profile desktop install
+```
+
+> 如果还是没写进 bundles，用一键脚本最省事——它会把 `allowBuilds` 一起配好。
 
 ### 装完没效果？
 
