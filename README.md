@@ -30,30 +30,59 @@
 
 - **DeepSeek Harness** 桌面版（Windows / macOS）
 - DSH 版本 ≥ `0.2.1-rc.2`
-- Node.js ≥ 22.19，pnpm（DSH 自带）
+- 能访问 GitHub（国内建议先开代理）
 
-### 方式一：从源码安装（推荐）
+---
+
+## ⚡ 一键安装（推荐）
+
+### Windows
+
+打开 **PowerShell**（不是 CMD），粘贴这一行回车：
+
+```powershell
+irm https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/install.ps1 | iex
+```
+
+### macOS / Linux
+
+打开 **终端**，粘贴这一行回车：
 
 ```bash
-# 1. 进入你的 DSH profile 目录
-#    Windows: C:\Users\<你的电脑用户名>\.dsh\profiles\desktop
-#    macOS:   ~/.dsh/profiles/desktop
-cd ~/.dsh/profiles/desktop
+curl -fsSL https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/install.sh | bash
+```
 
-# 2. 把插件放进 plugins/ 子目录
+脚本会自动完成：找 profile → 下载插件 → 改 `package.json` → 建链接。
+看到 **安装完成** 后，**完全退出 DSH 再打开**即可。
+
+> 脚本是幂等的，重复跑只会更新，不会装重。
+> 源码在 [install.ps1](install.ps1) / [install.sh](install.sh)，跑之前可以自己看一遍。
+
+### 装完没效果？
+
+看日志 `~/.dsh/dsh-haavk-boot/boot.log`，正常会有：
+
+```
+apply()  v=0.2.0  webServer=yes
+route ok /plugins/dsh-haavk-boot/splash.css
+...
+tapIndex=function
+```
+
+**注意：一定要「完全退出」DSH**（托盘图标也要退），只关窗口不算——插件是启动时读配置的。
+
+---
+
+## 手动安装
+
+### 方式一：git clone
+
+```bash
+cd ~/.dsh/profiles/desktop
 mkdir -p plugins
 git clone https://github.com/ShawSheepSussiah/dsh-haavk-boot.git plugins/dsh-haavk-boot
-
-# 3. 登记为依赖（在 package.json 的 dependencies 里加一行）
-#    "dsh-haavk-boot": "link:./plugins/dsh-haavk-boot"
-
-# 4. 加入 bundles 列表（在 package.json 的 dsh.profile.bundles 数组末尾加一项）
-#    "dsh-haavk-boot"
-
-# 5. 安装链接
+# 然后按下面「方式二」的第 3 步改 package.json
 pnpm install
-
-# 6. 完全退出 DSH，重新打开
 ```
 
 ### 方式二：手动复制
@@ -79,8 +108,21 @@ pnpm install
 }
 ```
 
+> ⚠️ `bundles` 里 `dsh-haavk-boot` **必须放在最后**。数组顺序就是加载顺序，`@deepseek-ai/dsh-base` / `dsh-web-app` 要先于插件。
+
 4. `pnpm install`
 5. **完全退出 DSH**（不是关窗口，是退出进程），重新打开
+
+---
+
+## 卸载
+
+```powershell
+# Windows
+Remove-Item "$env:USERPROFILE\.dsh\profiles\desktop\plugins\dsh-haavk-boot" -Recurse -Force
+```
+
+然后从 `package.json` 里删掉 `dependencies` 和 `bundles` 中的 `dsh-haavk-boot` 两行，`pnpm install`，重启 DSH。
 
 ---
 
@@ -88,6 +130,8 @@ pnpm install
 
 ```
 dsh-haavk-boot/
+├── install.ps1            Windows 一键安装脚本
+├── install.sh             macOS / Linux 一键安装脚本
 ├── package.json           插件清单（含 dsh.bundle.patch 声明）
 ├── cordis.patch.yml       把插件插入 loader 树的 patch
 ├── lib/

@@ -30,33 +30,55 @@ A fullscreen boot animation for DSH: native video, six timed captions, a particl
 
 - DeepSeek Harness desktop (Windows / macOS)
 - DSH ≥ `0.2.1-rc.2`
-- Node.js ≥ 22.19 with pnpm (bundled with DSH)
+- GitHub reachable from your machine
 
-### Steps
+---
 
-```bash
-# 1. Go to your DSH profile directory
-#    Windows: C:\Users\<you>\.dsh\profiles\desktop
-#    macOS:   ~/.dsh/profiles/desktop
-cd ~/.dsh/profiles/desktop
+## ⚡ One-line install (recommended)
 
-# 2. Clone the plugin into plugins/
-mkdir -p plugins
-git clone https://github.com/ShawSheepSussiah/dsh-haavk-boot.git plugins/dsh-haavk-boot
+### Windows
 
-# 3. Add to dependencies in package.json:
-#    "dsh-haavk-boot": "link:./plugins/dsh-haavk-boot"
+Open **PowerShell** (not CMD) and paste:
 
-# 4. Add to dsh.profile.bundles in package.json:
-#    "dsh-haavk-boot"
-
-# 5. Link it
-pnpm install
-
-# 6. Fully quit DSH and reopen
+```powershell
+irm https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/install.ps1 | iex
 ```
 
-### Manual copy
+### macOS / Linux
+
+Open a **terminal** and paste:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/install.sh | bash
+```
+
+The script finds your profile, downloads the plugin, patches `package.json`, and links it.
+When it prints **安装完成**, **fully quit DSH and reopen**.
+
+> The script is idempotent — re-running only updates. Read it first if you like:
+> [install.ps1](install.ps1) / [install.sh](install.sh).
+
+### Nothing shows up?
+
+Check `~/.dsh/dsh-haavk-boot/boot.log` — a healthy boot logs `route ok …` lines and `tapIndex=function`.
+
+**You must fully quit DSH** (including the tray icon), not just close the window — plugins are read at startup.
+
+---
+
+## Manual install
+
+### Option A: git clone
+
+```bash
+cd ~/.dsh/profiles/desktop
+mkdir -p plugins
+git clone https://github.com/ShawSheepSussiah/dsh-haavk-boot.git plugins/dsh-haavk-boot
+# then edit package.json as in Option B step 3
+pnpm install
+```
+
+### Option B: manual copy
 
 1. Download this repo, rename the folder to `dsh-haavk-boot`
 2. Place it at `~/.dsh/profiles/desktop/plugins/dsh-haavk-boot`
