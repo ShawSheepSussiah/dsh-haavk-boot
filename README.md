@@ -36,25 +36,28 @@
 
 ## ⚡ 安装（一条命令）
 
-打开终端 / PowerShell，粘贴：
+```bash
+dsh plugin --profile web add @shawsheepsussiah/dsh-haavk-boot
+```
+
+桌面版把 `web` 换成 `desktop`：
 
 ```bash
 dsh plugin --profile desktop add @shawsheepsussiah/dsh-haavk-boot
 ```
 
-**就这样，装完直接生效。** 不用改 `package.json`、不用配 `allowBuilds`、不用手动改 bundles —— DSH 会自动把它加进 `dsh.profile.bundles`。
+**装上就生效。** 不用改 `package.json`、不用配 `allowBuilds`、不用手动改 bundles —— DSH 会自动把它加进 `dsh.profile.bundles`。
 
 装完后 **完全退出 DSH**（托盘也要退），重新打开，就能看到开机动画。
 
-> `--profile desktop` 是桌面版的 profile 名。如果你用的是 web 版，换成 `--profile web`。
-> 不确定的话，看 `~/.dsh/profiles/` 下面有哪个目录。
+> `--profile` 后面跟的是 profile 名。不确定有哪些，看 `~/.dsh/profiles/` 下面有哪些目录。
 
 ### 装完没效果？
 
 看日志 `~/.dsh/dsh-haavk-boot/boot.log`，正常会有：
 
 ```
-apply()  v=0.2.0  webServer=yes
+apply()  v=0.2.4  webServer=yes
 route ok /plugins/dsh-haavk-boot/splash.css
 ...
 tapIndex=function

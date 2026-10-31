@@ -36,7 +36,11 @@ A fullscreen boot animation for DSH: native video, six timed captions, a particl
 
 ## ⚡ Install (one command)
 
-Open a terminal / PowerShell and paste:
+```bash
+dsh plugin --profile web add @shawsheepsussiah/dsh-haavk-boot
+```
+
+Desktop build: swap `web` for `desktop`:
 
 ```bash
 dsh plugin --profile desktop add @shawsheepsussiah/dsh-haavk-boot
@@ -46,8 +50,7 @@ That's it. No `package.json` editing, no `allowBuilds`, no manual `bundles` entr
 
 Then **fully quit DSH** (including the tray icon) and reopen. You'll see the boot splash.
 
-> `--profile desktop` is the desktop profile name. For the web profile use `--profile web`.
-> Not sure? Look at the directories under `~/.dsh/profiles/`.
+> Whatever follows `--profile` is the profile name. See the directories under `~/.dsh/profiles/`.
 
 ### Nothing shows up?
 
