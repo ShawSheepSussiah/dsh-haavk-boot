@@ -18,6 +18,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "prepare": "node scripts/ensure-profile-bundle.mjs",
     "postinstall": "node scripts/ensure-profile-bundle.mjs"
   },
   "engines": {
