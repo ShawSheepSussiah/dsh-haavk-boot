@@ -1,0 +1,23 @@
+# dsh-haavk-boot — HAAVK Relink 节点启动固件
+# 由插件包自带的 bundle patch 插入一行 Loader entry。
+- insert:
+    - id: dsh-haavk-boot
+      name: dsh-haavk-boot
+      inject: [webServer, connection]
+      config:
+        enabled: true
+        bootSplash: true
+        visualEnabled: true
+        glowIntensity: 1
+        replayOnReload: true
+        audioEnabled: true
+        audioVolume: 1
+        audioMode: file
+        bootWavPath: ''
+        shutdownWavPath: ''
+        hostAudioEnabled: false
+        bootScript: ''
+        bootScriptTimeoutMs: 0
+        bootDelayMs: 300
+        asciiBanner: true
+        telemetryLogLimit: 200

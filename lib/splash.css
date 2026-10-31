@@ -1,0 +1,102 @@
+:root{
+  --haavk-zh:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+  --haavk-mono:"Cascadia Mono","Consolas",ui-monospace,monospace;
+  --haavk-din:"Bahnschrift","DIN Alternate","Arial Narrow",system-ui,sans-serif;
+}
+
+html.dsu-lock,html.dsu-lock body{overflow:hidden!important}
+
+/* 全屏锁死：宿主可能给祖先加 transform/contain 使 fixed 失效 —— 关键属性全部 !important */
+#dsh-startup-root{
+  position:fixed!important;
+  left:0!important;top:0!important;right:0!important;bottom:0!important;
+  width:100vw!important;height:100vh!important;
+  margin:0!important;padding:0!important;
+  z-index:2147483000!important;
+  background:#000!important;overflow:hidden!important;
+  font-family:var(--haavk-zh);-webkit-font-smoothing:antialiased}
+#dsh-startup-root *{box-sizing:border-box;margin:0;padding:0}
+
+#dsh-startup-root .haavk-boot{position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;object-fit:cover;
+  opacity:0;animation:haavk-vin 1.2s ease forwards}
+@keyframes haavk-vin{to{opacity:1}}
+
+#dsh-startup-root .haavk-grade{position:absolute!important;inset:0!important;pointer-events:none;
+  background:
+    radial-gradient(ellipse 76% 70% at 50% 46%,transparent 44%,rgba(0,6,12,.58) 100%),
+    linear-gradient(180deg,rgba(0,10,18,.35),transparent 20%,transparent 76%,rgba(0,8,14,.5))}
+
+#dsh-startup-root .haavk-fx{position:absolute!important;inset:0!important;pointer-events:none;
+  mix-blend-mode:screen;opacity:.9}
+
+#dsh-startup-root .haavk-sweep{position:absolute!important;top:0;left:-40%;width:34%;height:100%;
+  pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(190,235,255,.1),rgba(255,255,255,.04),transparent);
+  animation:haavk-sweep 7s cubic-bezier(.4,0,.6,1) 1.2s infinite}
+@keyframes haavk-sweep{to{transform:translateX(440%)}}
+
+#dsh-startup-root header{position:absolute!important;top:2.2vh;left:3.6vw;right:3.6vw;
+  display:flex!important;justify-content:space-between;align-items:baseline;
+  font-family:var(--haavk-din);font-size:clamp(9px,.9vh,12px);letter-spacing:.4em;
+  color:rgba(205,232,250,.55);text-transform:uppercase;
+  opacity:0;animation:haavk-fade 1s ease 1s forwards}
+#dsh-startup-root header b{color:rgba(235,248,255,.9);font-weight:600}
+@keyframes haavk-fade{to{opacity:1}}
+
+#dsh-startup-root .haavk-cast{position:absolute!important;left:50%!important;bottom:8%!important;
+  transform:translateX(-50%);width:min(960px,90vw);text-align:center;
+  height:calc(clamp(17px,2.3vh,26px) * 2);pointer-events:none}
+#dsh-startup-root .haavk-cast p{position:absolute!important;left:0;right:0;top:0;
+  font-size:clamp(15px,2.05vh,24px);letter-spacing:.06em;line-height:1.35;
+  color:#f4fcff;opacity:0;transform:translateY(6px);
+  transition:opacity .45s ease,transform .45s ease;pointer-events:none;
+  text-shadow:0 2px 24px rgba(0,0,0,.95),0 0 22px rgba(120,200,240,.32)}
+#dsh-startup-root .haavk-cast p.on{opacity:1;transform:translateY(0)}
+
+#dsh-startup-root footer{position:absolute!important;left:3.6vw;right:3.6vw;bottom:3.4vh;
+  display:flex!important;justify-content:space-between;
+  font-family:var(--haavk-mono);font-size:clamp(9px,.95vh,12px);letter-spacing:.18em;
+  color:rgba(190,220,240,.5);opacity:0;animation:haavk-fade 1s ease 1.8s forwards}
+#dsh-startup-root footer b{color:rgba(225,245,255,.85);font-weight:600}
+
+#dsh-startup-root .haavk-bar{position:absolute!important;left:3.6vw;right:3.6vw;bottom:2.3vh;
+  height:1px;background:rgba(160,210,240,.14)}
+#dsh-startup-root .haavk-bar i{display:block;height:100%;width:0;
+  background:linear-gradient(90deg,rgba(120,190,240,.3),rgba(230,250,255,.95));
+  box-shadow:0 0 10px rgba(160,220,255,.5)}
+
+#dsh-startup-root.haavk-out{opacity:0;transition:opacity .9s cubic-bezier(.4,0,.2,1)}
+
+@media (prefers-reduced-motion: reduce){
+  #dsh-startup-root *{animation-duration:.001s!important;transition:none!important}
+}
+
+/* 无法全屏时（DSH 窗口 fullscreenable:false）：顶栏下移，避开原生标题栏按钮 */
+html.haavk-offset #dsh-startup-root header{top:calc(2.2vh + 38px)!important}
+html.haavk-offset #dsh-startup-root footer{bottom:2.6vh!important}
+html.haavk-offset #dsh-startup-root .haavk-bar{bottom:1.6vh!important}
+
+/* ── HUD 动效层（叠在视频上） ── */
+#dsh-startup-root .haavk-hud{position:absolute!important;inset:0!important;pointer-events:none}
+#dsh-startup-root .haavk-hud .c{position:absolute;width:26px;height:26px;
+  border-color:rgba(154,212,255,.42);opacity:0;animation:haavk-fade 1s ease .9s forwards}
+#dsh-startup-root .haavk-hud .c.tl{top:36px;left:24px;border-left:1px solid;border-top:1px solid}
+#dsh-startup-root .haavk-hud .c.tr{top:36px;right:24px;border-right:1px solid;border-top:1px solid}
+#dsh-startup-root .haavk-hud .c.bl{bottom:54px;left:24px;border-left:1px solid;border-bottom:1px solid}
+#dsh-startup-root .haavk-hud .c.br{bottom:54px;right:24px;border-right:1px solid;border-bottom:1px solid}
+
+#dsh-startup-root .haavk-hud .scanline{position:absolute!important;left:0;right:0;height:120px;top:-120px;
+  background:linear-gradient(180deg,transparent,rgba(160,220,255,.05) 88%,rgba(190,235,255,.14) 96%,transparent);
+  animation:haavk-scan 6.5s linear 1s infinite}
+@keyframes haavk-scan{to{transform:translateY(calc(100vh + 240px))}}
+
+#dsh-startup-root .haavk-hud .stream{position:absolute;right:20px;top:50%;transform:translateY(-50%);
+  font-family:var(--haavk-mono);font-size:10px;line-height:1.9;letter-spacing:.12em;
+  color:rgba(154,212,255,.32);text-align:right;opacity:0;animation:haavk-fade 1s ease 1.2s forwards}
+#dsh-startup-root .haavk-hud .stream b{color:rgba(190,235,255,.55);font-weight:400}
+
+#dsh-startup-root .haavk-hud .ticks{position:absolute;left:24px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:6px;opacity:0;animation:haavk-fade 1s ease 1.2s forwards}
+#dsh-startup-root .haavk-hud .ticks i{display:block;width:14px;height:1px;background:rgba(154,212,255,.28)}
+#dsh-startup-root .haavk-hud .ticks i:nth-child(3n){width:24px;background:rgba(190,235,255,.45)}

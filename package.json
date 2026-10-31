@@ -1,0 +1,54 @@
+{
+  "name": "dsh-haavk-boot",
+  "version": "0.2.0",
+  "description": "HAAVK Relink boot splash for DeepSeek Harness (DSH): fullscreen boot video, 6 timed captions, particle layer, native titlebar hiding, and a settings tab. 哈夫克 Relink 节点启动固件：全屏开机视频 + 逐句字幕 + 粒子层 + 标题栏隐身 + 设置面板。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.19"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    }
+  },
+  "optionalDependencies": {
+    "node-playsound": "^1.0.0"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh-plugin",
+    "dsh",
+    "haavk",
+    "relink",
+    "boot-splash",
+    "cordis"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-settings-plugins"
+      ]
+    }
+  }
+}
