@@ -30,74 +30,24 @@
 
 - **DeepSeek Harness** 桌面版（Windows / macOS）
 - DSH 版本 ≥ `0.2.1-rc.2`
-- 能访问 GitHub（国内建议先开代理）
+- 能访问 npm registry
 
 ---
 
-## ⚡ 一键安装（推荐）
+## ⚡ 安装（一条命令）
 
-### Windows
-
-打开 **PowerShell**（不是 CMD），粘贴这一行回车：
-
-```powershell
-irm https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/install.ps1 | iex
-```
-
-### macOS / Linux
-
-打开 **终端**，粘贴这一行回车：
+打开终端 / PowerShell，粘贴：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/install.sh | bash
+dsh plugin --profile desktop add @shawsheepsussiah/dsh-haavk-boot
 ```
 
-脚本会自动完成：找 profile → 下载插件 → 改 `package.json` → 放行构建脚本 → 建链接。
-看到 **安装完成** 后，**完全退出 DSH 再打开**即可。
+**就这样，装完直接生效。** 不用改 `package.json`、不用配 `allowBuilds`、不用手动改 bundles —— DSH 会自动把它加进 `dsh.profile.bundles`。
 
-> 脚本是幂等的，重复跑只会更新，不会装重。
-> 源码在 [install.ps1](install.ps1) / [install.sh](install.sh)，跑之前可以自己看一遍。
+装完后 **完全退出 DSH**（托盘也要退），重新打开，就能看到开机动画。
 
----
-
-## 📦 用 DSH 官方命令安装
-
-如果你更习惯官方命令：
-
-```bash
-dsh plugin --profile desktop add github:ShawSheepSussiah/dsh-haavk-boot
-```
-
-本插件带 `prepare` / `postinstall` 脚本，装完会**自动把自己追加到 `dsh.profile.bundles`**，不需要手改 `package.json`。
-
-但 **pnpm 12 会拦截 git 依赖的构建脚本**，第一次装可能报：
-
-```
-[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: dsh-haavk-boot@https://codeload.github.com/...
-Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
-```
-
-两个办法二选一：
-
-**办法 A — 先放行再装（推荐）**
-
-编辑 `~/.dsh/profiles/desktop/pnpm-workspace.yaml`，加上：
-
-```yaml
-allowBuilds:
-  dsh-haavk-boot: true
-```
-
-然后重跑上面那条 `dsh plugin add`。
-
-**办法 B — 事后批准**
-
-```bash
-dsh plugin --profile desktop approve-builds
-dsh plugin --profile desktop install
-```
-
-> 如果还是没写进 bundles，用一键脚本最省事——它会把 `allowBuilds` 一起配好。
+> `--profile desktop` 是桌面版的 profile 名。如果你用的是 web 版，换成 `--profile web`。
+> 不确定的话，看 `~/.dsh/profiles/` 下面有哪个目录。
 
 ### 装完没效果？
 
@@ -114,56 +64,58 @@ tapIndex=function
 
 ---
 
-## 手动安装
+## 手动安装（不推荐）
 
-### 方式一：git clone
+只有在无法访问 npm registry 时才需要。
+
+### 从 GitHub 源码装
 
 ```bash
 cd ~/.dsh/profiles/desktop
 mkdir -p plugins
 git clone https://github.com/ShawSheepSussiah/dsh-haavk-boot.git plugins/dsh-haavk-boot
-# 然后按下面「方式二」的第 3 步改 package.json
-pnpm install
 ```
 
-### 方式二：手动复制
-
-1. 下载本仓库，把整个文件夹重命名为 `dsh-haavk-boot`
-2. 放到 `~/.dsh/profiles/desktop/plugins/` 下
-3. 编辑 `~/.dsh/profiles/desktop/package.json`：
+然后编辑 `~/.dsh/profiles/desktop/package.json`：
 
 ```json
 {
   "dependencies": {
-    "dsh-haavk-boot": "link:./plugins/dsh-haavk-boot"
+    "@shawsheepsussiah/dsh-haavk-boot": "link:./plugins/dsh-haavk-boot"
   },
   "dsh": {
     "profile": {
       "bundles": [
         "@deepseek-ai/dsh-base",
         "@deepseek-ai/dsh-web-app",
-        "dsh-haavk-boot"
+        "@shawsheepsussiah/dsh-haavk-boot"
       ]
     }
   }
 }
 ```
 
-> ⚠️ `bundles` 里 `dsh-haavk-boot` **必须放在最后**。数组顺序就是加载顺序，`@deepseek-ai/dsh-base` / `dsh-web-app` 要先于插件。
+> ⚠️ `bundles` 里插件**必须放在最后**。数组顺序就是加载顺序，`@deepseek-ai/dsh-base` / `dsh-web-app` 要先于插件。
 
-4. `pnpm install`
-5. **完全退出 DSH**（不是关窗口，是退出进程），重新打开
+最后 `pnpm install`，完全退出 DSH 再打开。
 
 ---
 
 ## 卸载
 
-```powershell
-# Windows
-Remove-Item "$env:USERPROFILE\.dsh\profiles\desktop\plugins\dsh-haavk-boot" -Recurse -Force
+```bash
+dsh plugin --profile desktop remove @shawsheepsussiah/dsh-haavk-boot
 ```
 
-然后从 `package.json` 里删掉 `dependencies` 和 `bundles` 中的 `dsh-haavk-boot` 两行，`pnpm install`，重启 DSH。
+再手动从 `~/.dsh/profiles/desktop/package.json` 的 `dsh.profile.bundles` 里删掉一行：
+
+```json
+"@shawsheepsussiah/dsh-haavk-boot"
+```
+
+（pnpm 不会自动清 bundles，这是当前 DSH 的行为。）
+
+重启 DSH 即可。
 
 ---
 
@@ -171,8 +123,6 @@ Remove-Item "$env:USERPROFILE\.dsh\profiles\desktop\plugins\dsh-haavk-boot" -Rec
 
 ```
 dsh-haavk-boot/
-├── install.ps1            Windows 一键安装脚本
-├── install.sh             macOS / Linux 一键安装脚本
 ├── package.json           插件清单（含 dsh.bundle.patch 声明）
 ├── cordis.patch.yml       把插件插入 loader 树的 patch
 ├── lib/

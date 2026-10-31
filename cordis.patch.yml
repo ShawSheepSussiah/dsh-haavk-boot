@@ -2,7 +2,7 @@
 # 由插件包自带的 bundle patch 插入一行 Loader entry。
 - insert:
     - id: dsh-haavk-boot
-      name: dsh-haavk-boot
+      name: "@shawsheepsussiah/dsh-haavk-boot"
       inject: [webServer, connection]
       config:
         enabled: true

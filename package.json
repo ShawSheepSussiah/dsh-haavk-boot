@@ -1,6 +1,6 @@
 {
-  "name": "dsh-haavk-boot",
-  "version": "0.2.0",
+  "name": "@shawsheepsussiah/dsh-haavk-boot",
+  "version": "0.2.2",
   "description": "HAAVK Relink boot splash for DeepSeek Harness (DSH): fullscreen boot video, 6 timed captions, particle layer, native titlebar hiding, and a settings tab. 哈夫克 Relink 节点启动固件：全屏开机视频 + 逐句字幕 + 粒子层 + 标题栏隐身 + 设置面板。",
   "type": "module",
   "main": "lib/index.js",
@@ -11,16 +11,11 @@
   },
   "files": [
     "lib",
-    "scripts/ensure-profile-bundle.mjs",
     "cordis.patch.yml",
     "README.md",
     "README.en.md",
     "LICENSE"
   ],
-  "scripts": {
-    "prepare": "node scripts/ensure-profile-bundle.mjs",
-    "postinstall": "node scripts/ensure-profile-bundle.mjs"
-  },
   "engines": {
     "node": ">=22.19"
   },
@@ -45,6 +40,10 @@
     "cordis"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

@@ -34,29 +34,20 @@ A fullscreen boot animation for DSH: native video, six timed captions, a particl
 
 ---
 
-## ⚡ One-line install (recommended)
+## ⚡ Install (one command)
 
-### Windows
-
-Open **PowerShell** (not CMD) and paste:
-
-```powershell
-irm https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/install.ps1 | iex
-```
-
-### macOS / Linux
-
-Open a **terminal** and paste:
+Open a terminal / PowerShell and paste:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ShawSheepSussiah/dsh-haavk-boot/main/install.sh | bash
+dsh plugin --profile desktop add @shawsheepsussiah/dsh-haavk-boot
 ```
 
-The script finds your profile, downloads the plugin, patches `package.json`, and links it.
-When it prints **安装完成**, **fully quit DSH and reopen**.
+That's it. No `package.json` editing, no `allowBuilds`, no manual `bundles` entry — DSH adds it to `dsh.profile.bundles` automatically.
 
-> The script is idempotent — re-running only updates. Read it first if you like:
-> [install.ps1](install.ps1) / [install.sh](install.sh).
+Then **fully quit DSH** (including the tray icon) and reopen. You'll see the boot splash.
+
+> `--profile desktop` is the desktop profile name. For the web profile use `--profile web`.
+> Not sure? Look at the directories under `~/.dsh/profiles/`.
 
 ### Nothing shows up?
 
@@ -66,43 +57,56 @@ Check `~/.dsh/dsh-haavk-boot/boot.log` — a healthy boot logs `route ok …` li
 
 ---
 
-## Manual install
+## Manual install (not recommended)
 
-### Option A: git clone
+Only needed when npm registry is unreachable.
 
 ```bash
 cd ~/.dsh/profiles/desktop
 mkdir -p plugins
 git clone https://github.com/ShawSheepSussiah/dsh-haavk-boot.git plugins/dsh-haavk-boot
-# then edit package.json as in Option B step 3
-pnpm install
 ```
 
-### Option B: manual copy
-
-1. Download this repo, rename the folder to `dsh-haavk-boot`
-2. Place it at `~/.dsh/profiles/desktop/plugins/dsh-haavk-boot`
-3. Edit `~/.dsh/profiles/desktop/package.json`:
+Then edit `~/.dsh/profiles/desktop/package.json`:
 
 ```json
 {
   "dependencies": {
-    "dsh-haavk-boot": "link:./plugins/dsh-haavk-boot"
+    "@shawsheepsussiah/dsh-haavk-boot": "link:./plugins/dsh-haavk-boot"
   },
   "dsh": {
     "profile": {
       "bundles": [
         "@deepseek-ai/dsh-base",
         "@deepseek-ai/dsh-web-app",
-        "dsh-haavk-boot"
+        "@shawsheepsussiah/dsh-haavk-boot"
       ]
     }
   }
 }
 ```
 
-4. `pnpm install`
-5. **Fully quit DSH** (not just closing the window) and reopen
+> ⚠️ The plugin must be **last** in `bundles`. Order is load order; framework packages load first.
+
+Finish with `pnpm install`, then fully quit and reopen DSH.
+
+---
+
+## Uninstall
+
+```bash
+dsh plugin --profile desktop remove @shawsheepsussiah/dsh-haavk-boot
+```
+
+Then remove this line from `dsh.profile.bundles` in `~/.dsh/profiles/desktop/package.json`:
+
+```json
+"@shawsheepsussiah/dsh-haavk-boot"
+```
+
+(pnpm does not clean `bundles` — that is current DSH behaviour.)
+
+Restart DSH.
 
 ---
 
