@@ -11,11 +11,15 @@
   },
   "files": [
     "lib",
+    "scripts/ensure-profile-bundle.mjs",
     "cordis.patch.yml",
     "README.md",
     "README.en.md",
     "LICENSE"
   ],
+  "scripts": {
+    "postinstall": "node scripts/ensure-profile-bundle.mjs"
+  },
   "engines": {
     "node": ">=22.19"
   },
