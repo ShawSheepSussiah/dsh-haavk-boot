@@ -42,7 +42,7 @@ cd ~/.dsh/profiles/desktop
 
 # 2. Clone the plugin into plugins/
 mkdir -p plugins
-git clone https://github.com/<your-name>/dsh-haavk-boot.git plugins/dsh-haavk-boot
+git clone https://github.com/ShawSheepSussiah/dsh-haavk-boot.git plugins/dsh-haavk-boot
 
 # 3. Add to dependencies in package.json:
 #    "dsh-haavk-boot": "link:./plugins/dsh-haavk-boot"

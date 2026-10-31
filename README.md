@@ -36,13 +36,13 @@
 
 ```bash
 # 1. 进入你的 DSH profile 目录
-#    Windows: C:\Users\<你的用户名>\.dsh\profiles\desktop
+#    Windows: C:\Users\<你的电脑用户名>\.dsh\profiles\desktop
 #    macOS:   ~/.dsh/profiles/desktop
 cd ~/.dsh/profiles/desktop
 
 # 2. 把插件放进 plugins/ 子目录
 mkdir -p plugins
-git clone https://github.com/<你的用户名>/dsh-haavk-boot.git plugins/dsh-haavk-boot
+git clone https://github.com/ShawSheepSussiah/dsh-haavk-boot.git plugins/dsh-haavk-boot
 
 # 3. 登记为依赖（在 package.json 的 dependencies 里加一行）
 #    "dsh-haavk-boot": "link:./plugins/dsh-haavk-boot"
