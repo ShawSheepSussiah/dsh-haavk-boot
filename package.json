@@ -1,6 +1,6 @@
 {
   "name": "@shawsheepsussiah/dsh-haavk-boot",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "description": "HAAVK Relink boot splash for DeepSeek Harness (DSH): fullscreen boot video, 6 timed captions, particle layer, native titlebar hiding, and a settings tab. 哈夫克 Relink 节点启动固件：全屏开机视频 + 逐句字幕 + 粒子层 + 标题栏隐身 + 设置面板。",
   "type": "module",
   "main": "lib/index.js",

@@ -94,6 +94,7 @@ html.haavk-offset #dsh-startup-root .haavk-bar{bottom:1.6vh!important}
 #dsh-startup-root .haavk-hud .stream{position:absolute;right:20px;top:50%;transform:translateY(-50%);
   font-family:var(--haavk-mono);font-size:10px;line-height:1.9;letter-spacing:.12em;
   color:rgba(154,212,255,.32);text-align:right;opacity:0;animation:haavk-fade 1s ease 1.2s forwards}
+#dsh-startup-root .haavk-hud .stream span{display:block}
 #dsh-startup-root .haavk-hud .stream b{color:rgba(190,235,255,.55);font-weight:400}
 
 #dsh-startup-root .haavk-hud .ticks{position:absolute;left:24px;top:50%;transform:translateY(-50%);

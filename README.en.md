@@ -54,7 +54,14 @@ Then **fully quit DSH** (including the tray icon) and reopen. You'll see the boo
 
 ### Nothing shows up?
 
-Check `~/.dsh/dsh-haavk-boot/boot.log` — a healthy boot logs `route ok …` lines and `tapIndex=function`.
+Check `~/.dsh/@shawsheepsussiah/dsh-haavk-boot/boot.log` (0.2.4 and older wrote `~/.dsh/dsh-haavk-boot/boot.log`) — a healthy boot logs:
+
+```
+apply()  v=0.2.6  webServer=yes  inject=["webServer"]
+route ok /plugins/dsh-haavk-boot/splash.css
+...
+tapIndex=function
+```
 
 **You must fully quit DSH** (including the tray icon), not just close the window — plugins are read at startup.
 
@@ -200,7 +207,19 @@ Everything lives under the `#dsh-startup-root` scope in `lib/splash.css`.
 1. Check `dsh-haavk-boot` is listed in `dsh.profile.bundles`
 2. Check `plugins/dsh-haavk-boot/cordis.patch.yml` exists — without it the loader skips the package
 3. **Fully quit** DSH and reopen
-4. Inspect `~/.dsh/dsh-haavk-boot/boot.log`; a healthy boot logs `route ok …` lines and `tapIndex=function`
+4. Inspect `~/.dsh/@shawsheepsussiah/dsh-haavk-boot/boot.log`; a healthy boot logs `apply() v=0.2.6 … inject=["webServer"]`, nine `route ok` lines, and `tapIndex=function`
+
+**"Application failed to start / 1 entry did not activate" right on launch**
+
+The registered module id no longer matches the package name. The renderer console shows:
+
+```
+client-modules: duplicate factory registration for "dsh-haavk-boot"
+```
+
+`__ModuleLoader__.load({ id })` used the bare name `dsh-haavk-boot`, while the Host graph row id is the full scoped name `@shawsheepsussiah/dsh-haavk-boot`. The combo script registers the wrong key, the Host falls back to the single-resource URL and executes the bundle a second time, which trips the duplicate guard and kills that boot entry.
+
+Fix: `id` must equal the package's full `name`. **0.2.2 and older all carry this bug — upgrade to 0.2.6 or newer.**
 
 **Blank page**
 

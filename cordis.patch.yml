@@ -3,7 +3,7 @@
 - insert:
     - id: dsh-haavk-boot
       name: "@shawsheepsussiah/dsh-haavk-boot"
-      inject: [webServer, connection]
+      inject: [webServer]
       config:
         enabled: true
         bootSplash: true

@@ -54,10 +54,10 @@ dsh plugin --profile desktop add @shawsheepsussiah/dsh-haavk-boot
 
 ### 装完没效果？
 
-看日志 `~/.dsh/dsh-haavk-boot/boot.log`，正常会有：
+看日志 `~/.dsh/@shawsheepsussiah/dsh-haavk-boot/boot.log`（0.2.4 及更早写在 `~/.dsh/dsh-haavk-boot/boot.log`），正常会有：
 
 ```
-apply()  v=0.2.4  webServer=yes
+apply()  v=0.2.6  webServer=yes  inject=["webServer"]
 route ok /plugins/dsh-haavk-boot/splash.css
 ...
 tapIndex=function
@@ -150,14 +150,20 @@ DSH 桌面端的主页面是 `dsh-app://app/index.html`，**直接从 dist 目�
 
 ```
 client.js 被 __ModuleLoader__ 加载
-   └─ apply() → mountSplash()
-        ├─ 往 <body> 插入 <div id="dsh-startup-root">…</div>
-        ├─ 挂载 /plugins/dsh-haavk-boot/splash.css
-        └─ 加载 /plugins/dsh-haavk-boot/splash.js
-              └─ 播放 /plugins/dsh-haavk-boot/asset/boot.mp4
-                   └─ 按 video.currentTime 点亮 6 条字幕
-                        └─ 视频结束 → 溶解 → 移除 root → 解锁滚动
+   └─ apply() → 读 localStorage 上次配置 → 首帧决定挂不挂（不等 HTTP）
+        └─ mountSplash()
+             ├─ 往 <body> 插入空壳 <div id="dsh-startup-root"></div>
+             ├─ 挂载 /plugins/dsh-haavk-boot/splash.css
+             └─ 加载 /plugins/dsh-haavk-boot/splash.js
+                   ├─ 自己构建全部 markup（video / HUD / 6 条字幕 / 进度条）
+                   └─ 播放 /plugins/dsh-haavk-boot/asset/boot.mp4
+                        └─ 按 video.currentTime 点亮 6 条字幕
+                             └─ 视频结束 → 溶解 → 移除 root → 解锁滚动
 ```
+
+`window.__DSH_HAAVK_CFG__` 由上层注入，`splash.js` 只读不写；markup 只有这一个来源，Host 的 `tapIndex` 也只注入空壳，避免两处漂移。
+
+驱动只有一条回路：`driver ∈ {'video','clock'}`。视频能起播就用 `video.currentTime`；1.6 秒宽限期内没起播，整体切到墙钟；17 秒硬兜底一定放行（绝不锁死黑屏）。
 
 `/plugins/dsh-haavk-boot/*` 这些路径会被桌面协议层转发给 Host 的 webServer，由 `lib/index.js` 注册的路由提供文件。
 
@@ -190,10 +196,29 @@ DSH 的 preload 里有一段逻辑：往 `<body>` 塞一个隐藏 `<span>` 探�
 
 ### 安全兜底
 
-- 视频 15s 内没开始播 → 切墙钟驱动字幕，13.8s 后放行
-- 视频加载失败 → 直接放行
+- 首帧用 `localStorage` 缓存的上次配置决策，不等 `/config` 回来（避免主界面先闪一下）
+- `/config` 回来若与缓存不一致，会纠正：该撤就撤、该挂就挂（`unmountSplash()` 会复位 `splashScheduled`）
+- 视频 1.6s 内没起播 → 切墙钟驱动字幕，17s 硬兜底放行
+- 视频加载失败 → 直接切墙钟
 - `splash.js` 加载失败 → `client.js` 的 `onerror` 移除 root 并解锁
 - 任何 `try/catch` 都吞掉异常，绝不阻塞 DSH 主界面
+- 视频路由支持 `Range` / `206` / `ETag 304` / `416`，Electron 重播不再重新拉 6.2MB
+
+### Host 路由
+
+| 路径 | 方法 | 作用 |
+|---|---|---|
+| `/splash.css` | GET | 启动屏样式 |
+| `/splash.js` | GET | 启动屏运行时 |
+| `/asset/boot.mp4` | GET | 开机视频（支持 Range / 206 / 304 / 416） |
+| `/config` | GET / PATCH | 读 / 写配置 |
+| `/events` | GET | SSE 状态推送 |
+| `/status` | GET | 当前状态快照 |
+| `/logs` | GET | 遥测日志 |
+| `/preview` | POST | 手动触发一次序列预览 |
+| `/task` | POST | 后台任务 |
+
+访问控制基于「本机回环 socket」；`Origin: dsh-app://app`（桌面壳自定义协议）放行，跨源 http Origin 一律 403。
 
 ---
 
@@ -225,10 +250,12 @@ ffmpeg -i 你的视频.mp4 -c:v libx264 -profile:v high -pix_fmt yuv420p \
 
 - 启用 / 关闭节点
 - 开关开机启动屏
+- 开关视觉层（粒子 / HUD）
+- 开关音频
 - 开关「热重载后重播」
-- 一键重播启动屏
+- 一键重播启动屏（同时会 POST 一次 `/preview`）
 
-改动会写入 `~/.dsh/dsh-haavk-boot/settings.json`。
+改动会写入 `~/.dsh/@shawsheepsussiah/dsh-haavk-boot/settings.json`。
 
 ---
 
@@ -239,13 +266,25 @@ ffmpeg -i 你的视频.mp4 -c:v libx264 -profile:v high -pix_fmt yuv420p \
 1. 确认 `~/.dsh/profiles/desktop/package.json` 的 `bundles` 里有 `dsh-haavk-boot`
 2. 确认 `plugins/dsh-haavk-boot/cordis.patch.yml` 存在（缺这个 loader 不会加载）
 3. **完全退出 DSH 再打开**（关窗口不算）
-4. 看 `~/.dsh/dsh-haavk-boot/boot.log`，正常应该有：
+4. 看 `~/.dsh/@shawsheepsussiah/dsh-haavk-boot/boot.log`，正常应该有：
    ```
-   apply()  v=0.2.0  webServer=yes
+   apply()  v=0.2.6  webServer=yes  inject=["webServer"]
    route ok /plugins/dsh-haavk-boot/splash.css
    ...
    tapIndex=function
    ```
+
+**打开就弹「应用无法启动或已意外停止 / 1 entry did not activate」？**
+
+这是 `client.js` 注册 id 与包名不一致造成的。控制台里会有：
+
+```
+client-modules: duplicate factory registration for "dsh-haavk-boot"
+```
+
+含义：`__ModuleLoader__.load({ id })` 用了不带 scope 的 `dsh-haavk-boot`，而 Host 的 graph row id 是完整包名 `@shawsheepsussiah/dsh-haavk-boot`，两边对不上，combo 脚本注册失败后 Host 回退单资源 URL 再执行一次，于是撞 duplicate，整条 boot entry 卡死。
+
+修法：`id` 必须是 `package.json` 的完整 `name`。**0.2.2 及更早都有这个 bug，请升到 0.2.6+**。
 
 **页面白屏打不开？**
 
