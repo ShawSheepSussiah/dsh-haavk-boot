@@ -1,5 +1,7 @@
 # dsh-haavk-boot
 
+[![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/shawsheepsussiah/dsh-haavk-boot)
+
 **HAAVK Relink boot firmware for DeepSeek Harness (DSH / Cordis).**
 
 > 信息与你无限，Relink 重塑未来。

@@ -1,5 +1,7 @@
 # dsh-haavk-boot
 
+[![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/shawsheepsussiah/dsh-haavk-boot)
+
 **哈夫克 Relink 节点启动固件** — DeepSeek Harness（DSH / Cordis）的开机动画插件。
 
 > 信息与你无限，Relink 重塑未来。
